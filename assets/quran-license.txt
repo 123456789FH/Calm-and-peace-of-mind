@@ -1,0 +1,6 @@
+النص العثماني للقرآن الكريم من موسوعة القرآن الكريم (https://quranenc.com)، عبر مجموعة Quran JSON، إصدار 3.1.2، لـ Risan Bagja Pradana.
+https://github.com/risan/quran-json/tree/v3.1.2
+https://github.com/risan/quran-json/blob/v3.1.2/LICENSE.txt
+بيانات المجموعة مرخّصة بموجب المشاع الإبداعي، النسبة–الترخيص بالمثل 4.0 (CC BY-SA 4.0).
+https://creativecommons.org/licenses/by-sa/4.0/
+The dataset in quran-data.js is redistributed under CC BY-SA 4.0. Only the data structure was simplified; Arabic verse strings are unchanged.
