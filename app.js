@@ -6,10 +6,10 @@ if(today.day!==dailyKey())today=dailyBlank();
 let reading=readStore('reading',()=>({s:1,a:1,goal:5,ended:false}));
 const saveDay=()=>writeStore('day',today);
 const saveReading=()=>writeStore('reading',reading);
-const routes={home:'الرئيسية',morning:LABEL.morning,evening:LABEL.evening,quran:'وِردي القرآني',library:'المكتبة والفتاوى',reminders:'التذكيرات'};
+const routes={home:'الرئيسية',riyad:'رياض الصالحين',morning:LABEL.morning,evening:LABEL.evening,quran:'وِردي القرآني',library:'المكتبة والفتاوى',reminders:'التذكيرات'};
 const navItems=[['home','home','الرئيسية'],['quran','book','وِردي'],['library','books','المكتبة'],['reminders','bell','التذكيرات']];
 function route(){const value=location.hash.slice(1);return Object.hasOwn(routes,value)?value:'home'}
-function activeTab(){return ['morning','evening'].includes(route())?'home':route()}
+function activeTab(){if(route()==='riyad')return 'library';return ['morning','evening'].includes(route())?'home':route()}
 function svgSlots(){document.querySelectorAll('[data-icon]').forEach(el=>{el.innerHTML=icon(el.dataset.icon)})}
 function btn(action,label,key='arrow',cls='primary',extra=''){return '<button type="button" class="'+cls+'" data-action="'+action+'" '+extra+'>'+label+' '+icon(key)+'</button>'}
 function linkPage(path,name,key,cls='ghost'){return '<a class="'+cls+'" href="#'+path+'">'+name+' '+icon(key)+'</a>'}
@@ -41,14 +41,29 @@ function readerView(){
  const basmala=reading.a===1&&![1,9].includes(reading.s)?'<div class="basmala">'+QURAN[0].verses[0]+'</div>':'';
  return intro('وِردي القرآني')+'<div class="two-col"><article class="panel reader"><div class="eyeline" style="justify-content:center;color:var(--gold)">'+icon('book')+' القرآن الكريم</div><h2>سورة '+chapter.name+'</h2><div class="reader-meta">الآية '+ar(reading.a)+' من '+ar(chapter.verses.length)+'</div>'+basmala+'<div class="verse">'+v+' <span class="verse-num">﴿'+ar(reading.a)+'﴾</span></div><div class="actions multi">'+btn('prevVerse','السابقة','prev','ghost',first?'disabled':'')+btn('readVerse',last?(reading.ended?'أتممت القراءة':'قرأت آخر آية'):'قرأتُ الآية وتابعت','check','primary',last&&reading.ended?'disabled':'')+btn('nextVerse','التالية','arrow','ghost',last?'disabled':'')+'</div><p class="note">'+icon('bookmark')+' يُحفظ موضع القراءة على هذا الجهاز.</p></article><aside class="stack"><div class="panel"><h2>هدف اليوم</h2>'+progressLine(today.read.length,reading.goal)+'<div class="actions">'+btn('goal','تعديل عدد الآيات','settings','ghost')+'</div></div><div class="panel"><h2>الانتقال إلى آية</h2><form id="jump"><div class="fieldrow"><label>السورة<select id="chapter">'+QURAN.map((s,i)=>'<option value="'+(i+1)+'" '+(reading.s===i+1?'selected':'')+'>'+ar(i+1)+' · '+s.name+'</option>').join('')+'</select></label><label>الآية<input type="number" id="verseNo" min="1" max="'+chapter.verses.length+'" value="'+reading.a+'" required inputmode="numeric"></label></div><div class="actions"><button class="ghost">انتقل واحفظ الموضع '+icon('bookmark')+'</button></div></form></div></aside></div><p class="note">النص العثماني من موسوعة القرآن الكريم عبر <a class="source" href="https://github.com/risan/quran-json/tree/v3.1.2" target="_blank" rel="noopener noreferrer">Quran JSON</a> · <a class="source" href="./assets/quran-license.txt" target="_blank">نَسب النص وترخيص البيانات</a></p>'
 }
-function libraryView(){
- return intro('المكتبة والفتاوى')+'<div class="library">'+['كتب ومراجع','فتاوى العلماء'].map((category,i)=>'<section class="panel"><h2>'+category+'</h2>'+references.filter(r=>r[0]===category).map(r=>'<a class="refrow" href="'+r[3]+'" target="_blank" rel="noopener noreferrer"><span class="tile">'+icon(i?'link':'book')+'</span><div><b>'+r[1]+'</b><small>'+r[2]+'</small></div><span class="out">'+icon('link')+'</span></a>').join('')+'</section>').join('')+'</div><p class="note">تُفتح المراجع في مواقعها وتحتاج إلى اتصال بالإنترنت.</p>'
+function referenceRow(entry, glyph) {
+  const [, name, description, href, local] = entry;
+  const links = local?.download
+    ? '<a href="'+href+'" download="'+local.download+'">تنزيل الكتاب PDF '+icon('download')+'</a>'
+    : local?.source ? '<a href="'+local.source+'" target="_blank" rel="noopener noreferrer">تصفّح في المكتبة الشاملة '+icon('link')+'</a>' : '';
+  const bookHref = local?.source ? '#riyad' : href;
+  const target = local?.source ? '' : ' target="_blank" rel="noopener noreferrer"';
+  return '<div><a class="refrow" href="'+bookHref+'"'+target+'><span class="tile">'+icon(glyph)+'</span><div><b>'+name+'</b><small>'+description+'</small></div><span class="out">'+icon(local?'book':'link')+'</span></a>'+
+    (links?'<div class="book-action">'+links+'</div>':'')+'</div>';
+}
+function libraryView() {
+  const categories = ['كتب ومراجع', 'فتاوى العلماء'];
+  const sections = categories.map((category,i) => {
+    const rows = references.filter(r => r[0] === category).map(r => referenceRow(r, i?'link':'book'));
+    return '<section class="panel"><h2>'+category+'</h2>'+rows.join('')+'</section>';
+  });
+  return intro('المكتبة والفتاوى')+'<div class="library">'+sections.join('')+'</div><p class="note">بعد اكتمال تحميل التطبيق، يمكنك قراءة «حصن المسلم» و«رياض الصالحين» دون اتصال. تحتاج بقية المراجع والفتاوى إلى الإنترنت.</p>';
 }
 function ongoingTimers(){return Object.entries(alarms.timers).map(([k,at])=>'<div class="setting"><b>'+LABEL[k]+'</b><bdi data-timer="'+k+'">'+delayLabel(at-Date.now())+'</bdi>'+btn('cancelTimer','إلغاء','close','ghost','data-kind="'+k+'"')+'</div>').join('')}
 function remindersView(){return intro('تذكيراتي')+'<div class="two-col"><div class="stack"><section class="panel"><h2>المواعيد اليومية</h2><p class="note">فعّل ما تريد واضبط الساعة بحسب توقيت جهازك.</p><form id="dailyForm">'+reminderKinds.map(k=>'<div class="setting"><input id="on-'+k+'" type="checkbox" class="switch" aria-label="تفعيل '+LABEL[k]+'" '+(alarms.daily[k].on?'checked':'')+'><label for="on-'+k+'"><b>'+LABEL[k]+'</b></label><input id="time-'+k+'" aria-label="موعد '+LABEL[k]+'" type="time" value="'+alarms.daily[k].time+'" required></div>').join('')+'<div class="actions"><button class="primary">حفظ المواعيد '+icon('check')+'</button></div></form></section><section class="panel"><h2>مؤقّت لمرة واحدة</h2><form id="timerForm"><div class="fieldrow"><label>الوِرد<select id="timerKind">'+reminderKinds.map(k=>'<option value="'+k+'">'+LABEL[k]+'</option>').join('')+'</select></label><label>بعد كم دقيقة؟<input id="minutes" type="number" value="5" min="1" max="1440" required inputmode="numeric"></label></div><div class="actions"><button class="primary">بدء المؤقّت '+icon('timer')+'</button></div></form><div id="timersActive" class="timer-info">'+ongoingTimers()+'</div></section></div><aside class="stack"><section class="panel"><h2>جرس التذكير</h2><label class="setting"><input id="sound" class="switch" type="checkbox" '+(alarms.sound?'checked':'')+'>صوت الجرس داخل التطبيق</label>'+btn('testBell','تجربة الجرس','speaker','ghost')+'<p class="note">يرنّ الجرس عند حلول الموعد والتطبيق مفتوح ونشط. ارفع صوت الوسائط وألغِ الكتم لسماعه.</p></section><section class="panel"><h2>عند إغلاق التطبيق</h2><p class="note">انقل مواعيدك المحفوظة إلى تقويم جهازك، ثم افتح الملف ووافق على إضافة الأحداث وتنبيهاتها. يتحكم التقويم بصوتها عند قفل الشاشة.</p><div class="actions">'+btn('exportCalendar','تنزيل مواعيد التقويم','calendar','ghost')+'</div><p class="note">لتغيير موعد سبق استيراده أو إلغائه، حدّث الحدث في التقويم أيضًا.</p></section></aside></div>'}
 function render(){
  const path=route();$('#tabs').innerHTML=navItems.map(([r,k,n])=>'<a href="#'+r+'" '+(r===activeTab()?'class="active" aria-current="page"':'')+'>'+icon(k)+n+'</a>').join('');
- $('#main').innerHTML=path==='home'?homeView():path==='quran'?readerView():path==='library'?libraryView():path==='reminders'?remindersView():dhikrView(path);
+ $('#main').innerHTML=path==='home'?homeView():path==='quran'?readerView():path==='riyad'?'<iframe class="sakinah-reader" src="./books/riyad-as-salihin.html" title="رياض الصالحين وفهرس الأبواب"></iframe>':path==='library'?libraryView():path==='reminders'?remindersView():dhikrView(path);
  document.title=routes[path]+' | سَكينة';updateCountDisplays()
 }
 function showTheme(){let dark=document.body.classList.contains('dark');$('#theme').innerHTML=icon(dark?'sun':'moon');$('#theme').setAttribute('aria-label',dark?'تفعيل المظهر النهاري':'تفعيل المظهر الليلي');document.querySelector('meta[name=theme-color]').content=dark?'#102421':'#f8f7f1'}

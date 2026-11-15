@@ -1,0 +1,17 @@
+.bookwrap{width:min(780px,calc(100% - 36px));margin-inline:auto}
+.booktop{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:56px;font-size:14px}
+.booktop a,.backlib,.sourcebox a{color:var(--gold);text-decoration:underline;text-underline-offset:4px}
+.booktitle{margin-block:10px 24px}
+.booktitle p{font-family:SakinahNaskh,serif;font-size:25px}
+.bookindex{position:sticky;top:0;z-index:2;display:flex;gap:12px;background:var(--surface);padding:9px 14px;border:1px solid var(--line);border-radius:10px}
+.bookindex label{white-space:nowrap;font-weight:700}.bookindex select{min-width:0;flex:1}
+#booktext{padding:4px clamp(15px,4vw,38px) 28px;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+#booktext h2,#booktext h3{scroll-margin-top:88px;margin:26px 0 12px;line-height:1.7}
+#booktext h3{font-family:SakinahNaskh,serif;font-size:27px}
+#booktext p{font:23px/1.95 SakinahNaskh,serif;margin:9px 0;overflow-wrap:anywhere}
+#booktext .hadith-num{width:fit-content;color:var(--gold);font:700 14px/1.5 SakinahSans,sans-serif;border-top:1px solid var(--line);padding-top:12px;margin-top:18px}
+.sourcebox{font-size:13px;margin-block:18px;color:var(--muted)}.backlib{font-size:14px}
+@media(max-width:480px){.bookwrap{width:calc(100% - 24px)}.bookindex{padding:7px;gap:7px}.bookindex label,.booktop{font-size:12px}#booktext p{font-size:22px}}
+@media print{.bookindex,header,.backlib{display:none}#booktext{border:0;padding:0}}
+
+.embedded-book footer{display:none}.embedded-book header{background:var(--paper)}
